@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+bower_components/
+vendor/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Build and coverage output
+dist/
+build/
+out/
+coverage/
+.next/
+.nuxt/
+.output/
+.cache/
+.turbo/
+
+# Logs and runtime files
+*.log
+logs/
+*.pid
+*.seed
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Local databases and generated files
+*.sqlite
+*.sqlite3
+*.db
+tmp/
+temp/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Java/Gradle artifacts
+.gradle/
+target/
+*.class
+
+# Local configuration
+*.local
+
