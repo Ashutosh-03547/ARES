@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Ashutosh-03547/ARES#readme",
   "dependencies": {
+    "@google/genai": "^2.22.0",
     "@google/generative-ai": "^0.24.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1"
