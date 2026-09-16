@@ -16,25 +16,17 @@ app.post('/api/command', async (req, res) => {
     console.log(`\n[User]: ${userCommand}`);
 
     try {
-        // Send the user's command to the new Gemini 3.6 Flash model
-        // using the recommended Interactions API
+        // We are adding system_instruction to define the persona
         const interaction = await ai.interactions.create({
             model: 'gemini-3.6-flash',
             input: userCommand,
+            system_instruction: "You are A.R.E.S. (Authorized Reasoning & Execution System), a highly secure, concise, and professional desktop AI assistant. Never act like a generic chatbot. Your purpose is to manage local system tasks. Keep answers under 3 sentences unless asked for details.",
         });
 
-        // The Interactions API returns the response differently
-        // Usually, the text is available directly on the interaction object
-        // If interaction.text is undefined, we can stringify the object to see its structure
         const aiText = interaction.text || JSON.stringify(interaction);
-
         console.log(`[A.R.E.S.]: ${aiText}`);
 
-        // Send the AI's response back to the requester
-        res.status(200).send({
-            reply: aiText
-        });
-
+        res.status(200).send({ reply: aiText });
     } catch (error) {
         console.error("Error communicating with Gemini:", error);
         res.status(500).send({ error: "Brain disconnected." });
