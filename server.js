@@ -3,7 +3,7 @@ const express = require('express');
 const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Initialize Gemini using the key from your .env file
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -15,12 +15,18 @@ app.post('/api/command', async (req, res) => {
     const userCommand = req.body.command;
     console.log(`\n[User]: ${userCommand}`);
 
+    // 1. GENERATE DYNAMIC TIME CONTEXT
+    const now = new Date();
+    const timeContext = `[SYSTEM CONTEXT: Current local time is ${now.toLocaleString()}. Host machine: Lenovo i5-12500H.] `;
+
+    // 2. MERGE CONTEXT WITH USER COMMAND
+    const finalInput = `${timeContext}User says: ${userCommand}`;
+
     try {
-        // We are adding system_instruction to define the persona
         const interaction = await ai.interactions.create({
             model: 'gemini-3.6-flash',
-            input: userCommand,
-            system_instruction: "You are A.R.E.S. (Authorized Reasoning & Execution System), a highly secure, concise, and professional desktop AI assistant. Never act like a generic chatbot. Your purpose is to manage local system tasks. Keep answers under 3 sentences unless asked for details.",
+            input: finalInput,
+            system_instruction: "You are A.R.E.S. (Authorized Reasoning & Execution System), a highly secure desktop AI assistant. Keep answers concise and strictly accurate.",
         });
 
         const aiText = interaction.text || JSON.stringify(interaction);
@@ -34,8 +40,5 @@ app.post('/api/command', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log('--------------------------------------------');
-    console.log(`A.R.E.S. PRIMARY HUB ONLINE at http://localhost:${port}`);
-    console.log('Gemini 3.6 Flash Module: CONNECTED');
-    console.log('--------------------------------------------');
+    console.log(`A.R.E.S. server listening on http://localhost:${port}`);
 });
