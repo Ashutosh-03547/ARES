@@ -1,38 +1,59 @@
 require('dotenv').config();
-const say = require('say');
 const express = require('express');
 const { GoogleGenAI } = require('@google/genai');
+const say = require('say');
 
 const app = express();
 const port = 3000;
 
-// Initialize Gemini using the key from your .env file
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 app.use(express.json());
 
-// The endpoint that listens for your commands
+// 4. MEMORY: Global variable to store the session ID
+let lastInteractionId = null;
+
+// 2. SANITIZATION: Clean up text so it sounds human
+function cleanForSpeech(text) {
+    return text.replace(/[*#_`]/g, '').replace(/:/g, ',');
+}
+
 app.post('/api/command', async (req, res) => {
+    // 3. INTERRUPTION: Instantly stop any previous speech
+    say.stop();
+
     const userCommand = req.body.command;
     console.log(`\n[User]: ${userCommand}`);
 
-    // 1. GENERATE DYNAMIC TIME CONTEXT
     const now = new Date();
-    const timeContext = `[SYSTEM CONTEXT: Current local time is ${now.toLocaleString()}. Host machine: Asus i5-12500H.] `;
-
-    // 2. MERGE CONTEXT WITH USER COMMAND
+    const timeContext = `[SYSTEM CONTEXT: Current local time is ${now.toLocaleString()}. Host machine: Lenovo i5-12500H.] `;
     const finalInput = `${timeContext}User says: ${userCommand}`;
 
     try {
-        const interaction = await ai.interactions.create({
+        const requestParams = {
             model: 'gemini-3.6-flash',
             input: finalInput,
-            system_instruction: "You are A.R.E.S. (Authorized Reasoning & Execution System), a highly secure desktop AI assistant developed by Ashutosh. Keep answers professional, crisp, and confident. If asked to introduce yourself, give a brief, impressive 2-sentence overview of your architecture, security sandbox, and purpose.",
-        });
+            system_instruction: "You are A.R.E.S., a highly secure desktop AI assistant. Keep answers professional, crisp, and confident. Do not use markdown or complex formatting.",
+        };
 
-        const aiText = interaction.text || JSON.stringify(interaction);
+        // 4. MEMORY: Pass the previous interaction ID to remember the conversation
+        if (lastInteractionId) {
+            requestParams.previous_interaction_id = lastInteractionId;
+        }
+
+        const interaction = await ai.interactions.create(requestParams);
+
+        if (interaction.id) {
+            lastInteractionId = interaction.id;
+        }
+
+        const aiText = interaction.output_text || interaction.text || JSON.stringify(interaction);
         console.log(`[A.R.E.S.]: ${aiText}`);
-        say.speak(aiText);
+
+        const spokenText = cleanForSpeech(aiText);
+
+        // 1. FEMALE VOICE: Use the default Windows female voice
+        say.speak(spokenText, 'Microsoft Zira Desktop', 1.0);
+
         res.status(200).send({ reply: aiText });
     } catch (error) {
         console.error("Error communicating with Gemini:", error);
