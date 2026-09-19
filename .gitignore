@@ -42,6 +42,9 @@ desktop.ini
 # Local databases and generated files
 *.sqlite
 *.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
 *.db
 tmp/
 temp/
